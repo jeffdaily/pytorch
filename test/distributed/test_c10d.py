@@ -730,6 +730,7 @@ class ProcessGroupGlooTest(MultiProcessTestCase):
         self._test_broadcast_stress(inputs)
 
     @skip_if_not_multigpu
+    @skip_if_rocm
     def test_broadcast_stress_cuda(self):
         inputs = [torch.tensor([i * self.world_size + self.rank]).cuda() for i in range(1000)]
         self._test_broadcast_stress(inputs)
@@ -1216,6 +1217,7 @@ class ProcessGroupGlooTest(MultiProcessTestCase):
         self._test_gather_stress(inputs, lambda t: t.clone())
 
     @skip_if_not_multigpu
+    @skip_if_rocm
     def test_gather_stress_cuda(self):
         inputs = [torch.tensor([i + self.rank]).cuda() for i in range(1000)]
         self._test_gather_stress(inputs, lambda t: t.clone().cuda())
@@ -1316,6 +1318,7 @@ class ProcessGroupGlooTest(MultiProcessTestCase):
         self._test_allgather_stress(inputs, lambda t: t.clone())
 
     @skip_if_not_multigpu
+    @skip_if_rocm
     def test_allgather_stress_cuda(self):
         inputs = [torch.tensor([i + self.rank]).cuda() for i in range(1000)]
         self._test_allgather_stress(inputs, lambda t: t.clone().cuda())
@@ -1441,6 +1444,7 @@ class ProcessGroupGlooTest(MultiProcessTestCase):
         self._test_reduce_stress(inputs)
 
     @skip_if_not_multigpu
+    @skip_if_rocm
     def test_reduce_stress_cuda(self):
         inputs = [torch.tensor([i + self.rank]).cuda() for i in range(1000)]
         self._test_reduce_stress(inputs)
