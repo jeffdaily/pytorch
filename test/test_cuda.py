@@ -1035,7 +1035,6 @@ class TestCuda(TestCase):
 
     @unittest.skipIf(not TEST_MULTIGPU, "detected only one GPU")
     # Note: fails sometimes on the CI, passes on dual gfx906
-    @skipIfRocm
     def test_stream_context(self):
         s0 = torch.cuda.current_stream()
         s1 = torch.cuda.Stream(device=1)
@@ -2361,7 +2360,6 @@ t2.start()
                             chain(mod_scaling0.parameters(), mod_scaling1.parameters())):
                 self.assertTrue(torch.allclose(c, s, atol=1e-7))
 
-    @skipIfRocm
     @unittest.skipIf(not PY3, "Barrier is unavailable before Python3")
     def test_cublas_multiple_threads_same_device(self):
         # Note, these parameters should be very carefully tuned
@@ -2414,7 +2412,6 @@ t2.start()
                 self.assertEqual(results[t].sum().item(), size * size)
 
     @unittest.skipIf(not TEST_CUDNN, 'CUDNN not available')
-    @skipIfRocm
     @unittest.skipIf(not PY3, "Barrier is unavailable before Python3")
     def test_cudnn_multiple_threads_same_device(self):
         # This function is intended to test the lazy creation and reuse of per-thread
@@ -2468,7 +2465,6 @@ t2.start()
                     self.assertEqual(results[t].sum().item(),
                                      (2048 - test_iters) * (2048 - test_iters))
 
-    @skipIfRocm
     @unittest.skipIf(not PY3, "Barrier is unavailable before Python3")
     def test_cusparse_multiple_threads_same_device(self):
         size = 1024
