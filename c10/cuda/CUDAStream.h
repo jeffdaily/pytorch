@@ -120,14 +120,10 @@ public:
   }
 
   int priority() const {
-    #ifndef __HIP_PLATFORM_HCC__
       DeviceGuard guard{stream_.device()};
       int priority = 0;
       C10_CUDA_CHECK(cudaStreamGetPriority(stream(), &priority));
       return priority;
-    #else
-      AT_ERROR("cuStreamGetPriority with HIP is not supported");
-    #endif
   }
 
   /// Explicit conversion to cudaStream_t.
@@ -154,14 +150,10 @@ public:
   }
 
   static std::tuple<int, int> priority_range() {
-    #ifndef __HIP_PLATFORM_HCC__
       int least_priority, greatest_priority;
       C10_CUDA_CHECK(
         cudaDeviceGetStreamPriorityRange(&least_priority, &greatest_priority));
       return std::make_tuple(least_priority, greatest_priority);
-    #else
-      AT_ERROR("cuDeviceGetStreamPriorityRange with HIP is not supported");
-    #endif
   }
 
   // Deleted for now; use CUDAEvent::block instead
