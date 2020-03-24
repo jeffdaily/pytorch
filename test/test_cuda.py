@@ -1233,6 +1233,7 @@ class TestCuda(TestCase):
             torch.cuda._sleep(10)
         s1.synchronize()
         s1.record_event(e_tok)
+        e_tok.synchronize()
 
         self.assertTrue(s0.query())
         self.assertTrue(s1.query())
@@ -1250,8 +1251,6 @@ class TestCuda(TestCase):
             c2p.put(sync_func(self, TestCuda.FIFTY_MIL_CYCLES))
 
     @unittest.skipIf(not TEST_MULTIGPU, "detected only one GPU")
-    # Flaky on the ROCm CI
-    @skipIfRocm
     def test_stream_event_nogil(self):
         for sync_func in [TestCuda._stream_synchronize,
                           TestCuda._event_synchronize,
