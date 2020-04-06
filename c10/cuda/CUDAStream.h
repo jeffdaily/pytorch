@@ -56,6 +56,23 @@
 namespace c10 {
 namespace cuda {
 
+namespace {
+
+// Global stream constants
+#ifndef __HIP_PLATFORM_HCC__
+// Note: lower numbers are higher priorities, zero is default priority
+static int kHighPriority = -1;
+static int kDefaultPriority = 0;
+static int kLowPriority = 0;
+#else
+// Note: lower numbers are higher priorities, one is default priority
+static int kHighPriority = 0;
+static int kDefaultPriority = 1;
+static int kLowPriority = 2;
+#endif // __HIP_PLATFORM_HCC__
+
+} // anonymous namespace
+
 // Value object representing a CUDA stream.  This is just a wrapper
 // around c10::Stream, but it comes with a little extra CUDA-specific
 // functionality (conversion to cudaStream_t), and a guarantee that

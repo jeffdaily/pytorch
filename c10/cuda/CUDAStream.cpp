@@ -43,16 +43,6 @@ static constexpr int kStreamsPerPoolBits = 5;
 static constexpr int kStreamsPerPool = 1 << kStreamsPerPoolBits;
 static constexpr unsigned int kDefaultFlags = cudaStreamNonBlocking;
 
-#ifndef __HIP_PLATFORM_HCC__
-// Note: lower numbers are higher priorities, zero is default priority
-static int kHighPriority = -1;
-static int kLowPriority = 0;
-#else
-// Note: lower numbers are higher priorities, one is default priority
-static int kHighPriority = 0;
-static int kLowPriority = 2;
-#endif // __HIP_PLATFORM_HCC__
-
 // Default streams
 static std::once_flag init_flag;
 static LeakyStreamInternals default_streams[C10_COMPILE_TIME_MAX_GPUS];
