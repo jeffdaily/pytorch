@@ -140,8 +140,8 @@ FusedKernelCUDA::FusedKernelCUDA(
       nvrtc().cuModuleGetFunction(&function_, module_, name_.c_str()));
 
   // Computes max blocks
-#ifdef __HIP_PLATFORM_HCC__
-  // XXX HIP function signature is not compatible yet
+#if HIP_VERSION < 305
+  // HIP function signature is not compatible yet
   uint32_t max_blocks;
   AT_CUDA_DRIVER_CHECK(nvrtc().cuOccupancyMaxActiveBlocksPerMultiprocessor(
       &max_blocks, function_, 128, 0));
