@@ -67,6 +67,11 @@ namespace at { namespace cuda {
 //
 // HIP from ROCm 3.5 on renamed hipOccupancyMaxActiveBlocksPerMultiprocessor
 // to hipModuleOccupancyMaxActiveBlocksPerMultiprocessor.
+#if HIP_VERSION < 305
+#define HIP_RENAME hipOccupancyMaxActiveBlocksPerMultiprocessor
+#else
+#define HIP_RENAME cuOccupancyMaxActiveBlocksPerMultiprocessor
+#endif
 
 #define AT_FORALL_NVRTC(_)                       \
   _(nvrtcVersion)                                \
@@ -76,6 +81,7 @@ namespace at { namespace cuda {
   _(nvrtcGetPTX)                                 \
   _(cuModuleLoadData)                            \
   _(cuModuleGetFunction)                         \
+  _(HIP_RENAME)                                  \
   _(nvrtcGetErrorString)                         \
   _(nvrtcGetProgramLogSize)                      \
   _(nvrtcGetProgramLog)                          \
@@ -90,11 +96,6 @@ namespace at { namespace cuda {
 extern "C" typedef struct NVRTC {
 #define CREATE_MEMBER(name) decltype(&name) name;
   AT_FORALL_NVRTC(CREATE_MEMBER)
-#if defined(__HIP_PLATFORM_HCC__) && HIP_VERSION < 305
-  CREATE_MEMBER(hipOccupancyMaxActiveBlocksPerMultiprocessor)
-#else
-  CREATE_MEMBER(cuOccupancyMaxActiveBlocksPerMultiprocessor)
-#endif
 #undef CREATE_MEMBER
 } NVRTC;
 
