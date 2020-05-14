@@ -238,7 +238,7 @@ void compileKernel(Fusion& fusion, CudaKernel* entry) {
   AT_CUDA_DRIVER_CHECK(nvrtc().cuModuleLoadData(&(entry->module_), ptx.data()));
   AT_CUDA_DRIVER_CHECK(nvrtc().cuModuleGetFunction(
       &(entry->function_), entry->module_, lowered_kernel_name));
-#if HIP_VERSION < 305
+#if defined(__HIP_PLATFORM_HCC__) && HIP_VERSION < 305
   // HIP function signature is not compatible yet
   uint32_t max_blocks;
   AT_CUDA_DRIVER_CHECK(nvrtc().hipOccupancyMaxActiveBlocksPerMultiprocessor(
