@@ -90,7 +90,7 @@ namespace at { namespace cuda {
 extern "C" typedef struct NVRTC {
 #define CREATE_MEMBER(name) decltype(&name) name;
   AT_FORALL_NVRTC(CREATE_MEMBER)
-#if HIP_VERSION < 305
+#if defined(__HIP_PLATFORM_HCC__) && HIP_VERSION < 305
   CREATE_MEMBER(hipOccupancyMaxActiveBlocksPerMultiprocessor)
 #else
   CREATE_MEMBER(cuOccupancyMaxActiveBlocksPerMultiprocessor)
