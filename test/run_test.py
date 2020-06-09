@@ -103,9 +103,6 @@ ROCM_BLACKLIST = [
     'distributed/test_nccl',
     'test_determination',
     'test_multiprocessing',
-    'test_jit_simple',
-    'test_jit_legacy',
-    'test_jit_fuser_legacy',
     'test_tensorexpr',
     'test_type_hints',
 ]
