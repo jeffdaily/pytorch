@@ -1,18 +1,19 @@
 name: IntegrateFromUpstream
 on:
   schedule:
-    - cron: 0 * * * *
+    # verified via crontab.guru website. “At 01:00 on Monday.”
+    - cron: '0 1 * * 1'
 jobs:
-  IFU:
+  IntegrateFromUpstream:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Get current date
+      - name: Get Current Date
         id: date
         run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
-      - name: 
+      - name: Fetch and Merge
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
