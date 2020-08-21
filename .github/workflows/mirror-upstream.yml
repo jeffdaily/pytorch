@@ -1,17 +1,17 @@
 name: MirrorUpstream
 on:
   schedule:
-    - cron: 0 * * * *
+    - cron: * * * * *
 jobs:
-  IFU:
+  MirrorUpstream:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-          branch: upstream
       - name: 
         run: |
+          git checkout upstream
           git config user.name github-actions
           git config user.email github-actions@github.com
           git remote add upstream https://github.com/pytorch/pytorch
