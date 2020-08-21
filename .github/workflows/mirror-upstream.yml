@@ -1,7 +1,7 @@
 name: MirrorUpstream
 on:
   schedule:
-    - cron: * * * * *
+    - cron: '* * * * *'
 jobs:
   MirrorUpstream:
     runs-on: ubuntu-latest
