@@ -1,10 +1,10 @@
-name: IntegrateFromUpstream
+name: IntegrateFromUpstream_rocm3.8_internal_testing
 on:
   schedule:
     # verified via crontab.guru website. “At 01:00 on Monday.”
     - cron: '* * * * *'
 jobs:
-  IntegrateFromUpstream:
+  IntegrateFromUpstream_rocm3.8_internal_testing:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
