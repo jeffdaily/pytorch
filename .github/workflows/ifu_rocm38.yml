@@ -2,7 +2,7 @@ name: IntegrateFromUpstream
 on:
   schedule:
     # verified via crontab.guru website. “At 01:00 on Monday.”
-    - cron: '0 1 * * 1'
+    - cron: '* * * * *'
 jobs:
   IntegrateFromUpstream:
     runs-on: ubuntu-latest
@@ -15,6 +15,7 @@ jobs:
         run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
       - name: Fetch and Merge
         run: |
+          git checkout rocm3.8_internal_testing
           git config user.name github-actions
           git config user.email github-actions@github.com
           git remote add upstream https://github.com/pytorch/pytorch
