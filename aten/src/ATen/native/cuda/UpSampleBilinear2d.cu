@@ -458,14 +458,15 @@ static void upsample_bilinear2d_backward_out_cuda_template(
 }
 
 // Code for upsampling with antialias
-template <typename scalar_t, typename accscalar_t, int interp_size>
+template <typename scalar_t, typename accscalar_t, int interp_size, typename filter_fn_t>
 C10_LAUNCH_BOUNDS_1(256) // 256 performs better then 1024
 __global__ void upsample_gen2d_aa_out_frame(
     const accscalar_t height_scale,
     const accscalar_t width_scale,
     const bool align_corners,
     const PackedTensorAccessor64<scalar_t, 4> idata,
-    PackedTensorAccessor64<scalar_t, 4> odata) {
+    PackedTensorAccessor64<scalar_t, 4> odata,
+    const filter_fn_t& filter_fn) {
 
   const int batchsize = idata.size(0);
   const int channels = idata.size(1);
@@ -509,10 +510,11 @@ __global__ void upsample_gen2d_aa_out_frame(
   if (threadIdx.y == 0)
   {
     // All threadIdx.y have the same wx weights
-    upsample_antialias::_compute_weights<scalar_t, accscalar_t, interp_size>(
+    upsample_antialias::_compute_weights(
         wx,
         width_scale,
         interp_width,
+        filter_fn,
         xmin - xcenter,
         xsize);
   }
@@ -520,10 +522,11 @@ __global__ void upsample_gen2d_aa_out_frame(
   if (threadIdx.x == 0)
   {
     // All threadIdx.x have the same wy weights
-    upsample_antialias::_compute_weights<scalar_t, accscalar_t, interp_size>(
+    upsample_antialias::_compute_weights(
         wy,
         height_scale,
         interp_height,
+        filter_fn,
         ymin - ycenter,
         ysize);
   }
@@ -549,14 +552,15 @@ __global__ void upsample_gen2d_aa_out_frame(
 }
 
 // Code for upsampling with antialias
-template <typename scalar_t, typename accscalar_t, int interp_size>
+template <typename scalar_t, typename accscalar_t, int interp_size, typename filter_fn_t>
 C10_LAUNCH_BOUNDS_1(256) // 256 performs better then 1024
 __global__ void upsample_gen2d_aa_backward_out_frame(
     const accscalar_t height_scale,
     const accscalar_t width_scale,
     const bool align_corners,
     PackedTensorAccessor64<scalar_t, 4> idata,
-    const PackedTensorAccessor64<scalar_t, 4> odata) {
+    const PackedTensorAccessor64<scalar_t, 4> odata,
+    const filter_fn_t& filter_fn) {
 
   const int batchsize = idata.size(0);
   const int channels = idata.size(1);
@@ -609,10 +613,11 @@ __global__ void upsample_gen2d_aa_backward_out_frame(
   if (threadIdx.y == 0)
   {
     // All threadIdx.y have the same wx weights
-    upsample_antialias::_compute_weights<scalar_t, accscalar_t, interp_size>(
+    upsample_antialias::_compute_weights(
         wx,
         width_scale,
         interp_width,
+        filter_fn,
         xmin - xcenter,
         xsize);
   }
@@ -620,10 +625,11 @@ __global__ void upsample_gen2d_aa_backward_out_frame(
   if (threadIdx.x == 0)
   {
     // All threadIdx.x have the same wy weights
-    upsample_antialias::_compute_weights<scalar_t, accscalar_t, interp_size>(
+    upsample_antialias::_compute_weights(
         wy,
         height_scale,
         interp_height,
+        filter_fn,
         ymin - ycenter,
         ysize);
   }
@@ -729,12 +735,22 @@ static void upsample_gen2d_aa_out_cuda_template(
             shmem_size <= sharedMemPerBlock,
             "Too much shared memory required: ", shmem_size, " vs ", sharedMemPerBlock);
 
-        upsample_gen2d_aa_out_frame<scalar_t, accscalar_t, interp_size>
-            <<<grid,
-               block,
-               shmem_size,
-               stream>>>(height_scale, width_scale, align_corners, idata, odata);
-        C10_CUDA_KERNEL_LAUNCH_CHECK();
+        if (interp_size == 2) {
+            upsample_gen2d_aa_out_frame<scalar_t, accscalar_t, interp_size>
+                <<<grid,
+                block,
+                shmem_size,
+                stream>>>(height_scale, width_scale, align_corners, idata, odata, upsample_antialias::BilinearFilterFunctor<scalar_t>());
+
+        }
+        else {
+            upsample_gen2d_aa_out_frame<scalar_t, accscalar_t, interp_size>
+                <<<grid,
+                block,
+                shmem_size,
+                stream>>>(height_scale, width_scale, align_corners, idata, odata, upsample_antialias::BicubicFilterFunctor<scalar_t>());
+        }
+        C10_HIP_KERNEL_LAUNCH_CHECK();
       });
 
   if (!output.is_contiguous()) {
@@ -810,12 +826,21 @@ static void upsample_gen2d_aa_backward_out_cuda_template(
             shmem_size <= sharedMemPerBlock,
             "Too much shared memory required: ", shmem_size, " vs ", sharedMemPerBlock);
 
-        upsample_gen2d_aa_backward_out_frame<scalar_t, accscalar_t, interp_size>
-            <<<grid,
-               block,
-               shmem_size,
-               stream>>>(height_scale, width_scale, align_corners, idata, odata);
-        C10_CUDA_KERNEL_LAUNCH_CHECK();
+        if (interp_size == 2) {
+            upsample_gen2d_aa_backward_out_frame<scalar_t, accscalar_t, interp_size>
+                <<<grid,
+                   block,
+                   shmem_size,
+                   stream>>>(height_scale, width_scale, align_corners, idata, odata, upsample_antialias::BilinearFilterFunctor<scalar_t>());
+        }
+        else {
+            upsample_gen2d_aa_backward_out_frame<scalar_t, accscalar_t, interp_size>
+                <<<grid,
+                   block,
+                   shmem_size,
+                   stream>>>(height_scale, width_scale, align_corners, idata, odata, upsample_antialias::BicubicFilterFunctor<scalar_t>());
+        }
+        C10_HIP_KERNEL_LAUNCH_CHECK();
       });
 }
 
