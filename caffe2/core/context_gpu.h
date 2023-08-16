@@ -171,7 +171,13 @@ class CAFFE2_CUDA_API ThreadLocalCUDAObjects {
 #endif // CAFFE2_USE_CUDNN
 };
 
-class CAFFE2_CUDA_API CUDAContext final : public BaseContext {
+#ifdef USE_ROCM
+#define MAYBE_FINAL
+#else
+#define MAYBE_FINAL final
+#endif
+
+class CAFFE2_CUDA_API CUDAContext MAYBE_FINAL : public BaseContext {
  public:
   // The default cuda context constructor.
   explicit CUDAContext(DeviceIndex gpu_id = -1);

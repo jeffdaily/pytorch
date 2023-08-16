@@ -636,7 +636,7 @@ struct DefaultCUDAAllocator final : public at::Allocator {
 };
 
 static DefaultCUDAAllocator g_cuda_alloc;
-REGISTER_ALLOCATOR(CUDA, &g_cuda_alloc);
+REGISTER_CUDA_ALLOCATOR(&g_cuda_alloc);
 
 } // namespace caffe2
 

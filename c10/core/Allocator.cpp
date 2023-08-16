@@ -2,6 +2,8 @@
 
 #include <c10/util/ThreadLocalDebugInfo.h>
 
+#include <iostream>
+
 namespace c10 {
 
 static void deleteInefficientStdFunctionContext(void* ptr) {
@@ -25,6 +27,7 @@ C10_API at::Allocator* allocator_array[at::COMPILE_TIME_MAX_DEVICE_TYPES];
 C10_API uint8_t allocator_priority[at::COMPILE_TIME_MAX_DEVICE_TYPES] = {0};
 
 void SetAllocator(at::DeviceType t, at::Allocator* alloc, uint8_t priority) {
+  std::cerr << __FILE__ << " : " << __LINE__ << " : " << __func__ << " : t=" << t << " alloc=" << (void*)alloc << " priority=" << (int32_t)priority << std::endl;
   if (priority >= allocator_priority[static_cast<int>(t)]) {
     allocator_array[static_cast<int>(t)] = alloc;
     allocator_priority[static_cast<int>(t)] = priority;
@@ -32,6 +35,7 @@ void SetAllocator(at::DeviceType t, at::Allocator* alloc, uint8_t priority) {
 }
 
 at::Allocator* GetAllocator(const at::DeviceType& t) {
+  std::cerr << __FILE__ << " : " << __LINE__ << " : " << __func__ << " : t=" << t << std::endl;
   auto* alloc = allocator_array[static_cast<int>(t)];
   TORCH_INTERNAL_ASSERT_DEBUG_ONLY(alloc, "Allocator for ", t, " is not set.");
   return alloc;

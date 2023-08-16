@@ -73,6 +73,12 @@ class TORCH_API Tensor final {
     return Tensor(*this, IDoWantAliasing);
   }
 
+  // See Note [Masquerading as CUDA]
+  void unsafeSetDevice(at::Device device) {
+    std::cerr << __FILE__ << " : " << __LINE__ << " : " << __func__ << " : device = " << device << std::endl;
+    impl_->unsafe_storage_set_device(device);
+  }
+
   /**
    * @brief Creates a tensor of the given device type.
    *

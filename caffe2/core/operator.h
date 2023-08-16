@@ -217,7 +217,11 @@ class TORCH_API OperatorBase : public Observable<OperatorBase> {
       t = t.contiguous();
     }
     Tensor tensor = caffe2::Tensor(std::move(t));
+#ifndef USE_ROCM
     CAFFE_ENFORCE_EQ(tensor.GetDeviceType(), type);
+#else
+    std::cerr << __FILE__ << " : " << __LINE__ << " : " << __func__ << " : tensor.GetDeviceType()=" << tensor.GetDeviceType() << " type=" << type << std::endl;
+#endif
     input_tensors_[idx] = std::move(tensor);
     return input_tensors_[idx];
 #else
@@ -253,7 +257,11 @@ class TORCH_API OperatorBase : public Observable<OperatorBase> {
     auto &output = output_tensors_[idx];
     if (!output.defined() || output.GetDeviceType() != type) {
       // Fix tensor type
+#ifdef USE_ROCM
+      output = Tensor(DeviceType::CUDA);
+#else
       output = Tensor(type);
+#endif
     }
     return &output;
 #else
@@ -1407,13 +1415,16 @@ C10_DECLARE_REGISTRY(
     Workspace*);
 #define REGISTER_HIP_OPERATOR_CREATOR(key, ...) \
   C10_REGISTER_CREATOR(HIPOperatorRegistry, key, __VA_ARGS__)
+// these register both HIP and CUDA
 #define REGISTER_HIP_OPERATOR(name, ...)                                   \
+  REGISTER_CUDA_OPERATOR(name, __VA_ARGS__);                               \
   IMPORT_IF_NOT_MSVC void CAFFE2_PLEASE_ADD_OPERATOR_SCHEMA_FOR_##name();  \
   static void CAFFE2_UNUSED CAFFE_ANONYMOUS_VARIABLE_HIP##name() {         \
     CAFFE2_PLEASE_ADD_OPERATOR_SCHEMA_FOR_##name();                        \
   }                                                                        \
   C10_REGISTER_CLASS(HIPOperatorRegistry, name, __VA_ARGS__)
-#define REGISTER_HIP_OPERATOR_STR(str_name, ...) \
+#define REGISTER_HIP_OPERATOR_STR(str_name, ...)     \
+  REGISTER_CUDA_OPERATOR_STR(str_name, __VA_ARGS__); \
   C10_REGISTER_TYPED_CLASS(HIPOperatorRegistry, str_name, __VA_ARGS__)
 
 #define REGISTER_HIP_OPERATOR_WITH_ENGINE(name, engine, ...) \

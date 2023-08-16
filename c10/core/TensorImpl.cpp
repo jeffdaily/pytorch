@@ -186,6 +186,8 @@ TensorImpl::TensorImpl(
 }
 
 void TensorImpl::_change_backend_component_keys(c10::Device device) {
+  std::cerr << __FILE__ << " : " << __LINE__ << " : " << __func__ << " : device = " << device << std::endl;
+  std::cerr << __FILE__ << " : " << __LINE__ << " : " << __func__ << " : old key_set_ = " << key_set_ << std::endl;
   BackendComponent new_backend = toBackendComponent(device.type());
   BackendComponent old_backend = key_set_.highestBackendKey();
 
@@ -202,6 +204,7 @@ void TensorImpl::_change_backend_component_keys(c10::Device device) {
   // Keys]
   key_set = key_set.remove_backend(old_backend);
   key_set_ = key_set | DispatchKeySet(new_backend);
+  std::cerr << __FILE__ << " : " << __LINE__ << " : " << __func__ << " : new key_set_ = " << key_set_ << std::endl;
 }
 
 void TensorImpl::HandleResize() {

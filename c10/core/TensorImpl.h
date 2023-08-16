@@ -27,6 +27,7 @@
 #include <memory>
 #include <type_traits>
 #include <utility>
+#include <iostream>
 
 // A global boolean variable to control whether we free memory when a Tensor
 // is shrunk to a smaller size. As a result, a Tensor is always going to
@@ -1036,6 +1037,14 @@ struct C10_API TensorImpl : public c10::intrusive_ptr_target {
    */
   inline const Storage& unsafe_storage() const {
     return storage_;
+  }
+
+  // See Note [Masquerading as CUDA]
+  void unsafe_storage_set_device(Device device) {
+    std::cerr << __FILE__ << ":" << __LINE__ << " : " << __func__ << " : device = " << device << std::endl;
+    storage_.mutable_data_ptr().unsafe_set_device(device);
+    device_opt_ = storage_.device();
+    _change_backend_component_keys(device);
   }
 
   bool unique_version() const {

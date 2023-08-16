@@ -76,7 +76,7 @@ c10::intrusive_ptr<c10::StorageImpl> make_storage_impl(
     if (device.type() == at::kCPU) {
       allocator = c10::GetDefaultCPUAllocator();
 #ifdef USE_CUDA
-    } else if (device.type() == at::kCUDA) {
+    } else if (device.type() == at::kCUDA || device.type() == at::kHIP) {
       at::globalContext().lazyInitCUDA();
       allocator = c10::cuda::CUDACachingAllocator::get();
 #endif

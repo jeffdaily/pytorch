@@ -88,7 +88,25 @@ inline void _call_caffe2_op_from_c10(
     outputs_c2[i] = caffe2::Tensor(outputs.extract(i));
   }
 
+  std::cerr << __FILE__ << " : " << __LINE__ << " : " << __func__ << " : outputs before" << std::endl;
+  for (const auto i : c10::irange(num_outputs)) {
+    if (outputs_c2[i].defined()) {
+      std::cerr << __FILE__ << " : " << __LINE__ << " : " << __func__ << " : [" << i << "] " << outputs_c2[i].GetDeviceType() << std::endl;
+    }
+    else {
+      std::cerr << __FILE__ << " : " << __LINE__ << " : " << __func__ << " : [" << i << "] " << "undefind" << std::endl;
+    }
+  }
   outputs_c2 = (*call_op)(schema, std::move(inputs), std::move(outputs_c2));
+  std::cerr << __FILE__ << " : " << __LINE__ << " : " << __func__ << " : outputs after" << std::endl;
+  for (const auto i : c10::irange(num_outputs)) {
+    if (outputs_c2[i].defined()) {
+      std::cerr << __FILE__ << " : " << __LINE__ << " : " << __func__ << " : [" << i << "] " << outputs_c2[i].GetDeviceType() << std::endl;
+    }
+    else {
+      std::cerr << __FILE__ << " : " << __LINE__ << " : " << __func__ << " : [" << i << "] " << "undefind" << std::endl;
+    }
+  }
   TORCH_INTERNAL_ASSERT(num_outputs == outputs_c2.size());
 
   bool return_tensor_list = false;
@@ -100,6 +118,18 @@ inline void _call_caffe2_op_from_c10(
       }
     }
   }
+#if USE_ROCM
+  // Convert HIP Tensors to CUDA Tensors
+  // using C10_EXPORT_CAFFE2_OP_TO_C10_CUDA for ROCm builds
+  // will expect device type HIP, but pytorch tensors masquerade as CUDA
+  for (const auto i : c10::irange(num_outputs)) {
+    if (outputs_c2[i].GetDeviceType() == c10::DeviceType::HIP) {
+      std::cerr << __FILE__ << " : " << __LINE__ << " : " << __func__ << " : calling unsafeSetDevice on HIP output, cast to CUDA" << std::endl;
+      // we can't use c10::DeviceType::CUDA alone because there is no device ordinal information
+      outputs_c2[i].unsafeSetDevice(Device(c10::DeviceType::CUDA, outputs_c2[i].GetDevice().index()));
+    }
+  }
+#endif
   if (return_tensor_list) {
     for (const auto i : c10::irange(num_outputs)) {
       outputs.set(i, at::Tensor(std::move(outputs_c2[i])));
