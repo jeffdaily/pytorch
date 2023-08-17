@@ -217,11 +217,8 @@ class TORCH_API OperatorBase : public Observable<OperatorBase> {
       t = t.contiguous();
     }
     Tensor tensor = caffe2::Tensor(std::move(t));
-#ifndef USE_ROCM
-    CAFFE_ENFORCE_EQ(tensor.GetDeviceType(), type);
-#else
     std::cerr << __FILE__ << " : " << __LINE__ << " : " << __func__ << " : tensor.GetDeviceType()=" << tensor.GetDeviceType() << " type=" << type << std::endl;
-#endif
+    CAFFE_ENFORCE_EQ(tensor.GetDeviceType(), type);
     input_tensors_[idx] = std::move(tensor);
     return input_tensors_[idx];
 #else
@@ -255,14 +252,17 @@ class TORCH_API OperatorBase : public Observable<OperatorBase> {
 #if defined(EXPOSE_C2_OPS) || \
     !defined(CAFFE2_IS_XPLAT_BUILD) && !defined(C10_MOBILE)
     auto &output = output_tensors_[idx];
+    if (!output.defined()) {
+      std::cerr << __FILE__ << " : " << __LINE__ << " : " << __func__ << " : output.GetDeviceType()=" << "undefined" << " type=" << type << std::endl;
+    }
+    else {
+      std::cerr << __FILE__ << " : " << __LINE__ << " : " << __func__ << " : output.GetDeviceType()=" << output.GetDeviceType() << " type=" << type << std::endl;
+    }
     if (!output.defined() || output.GetDeviceType() != type) {
       // Fix tensor type
-#ifdef USE_ROCM
-      output = Tensor(DeviceType::CUDA);
-#else
       output = Tensor(type);
-#endif
     }
+    std::cerr << __FILE__ << " : " << __LINE__ << " : " << __func__ << " : output.GetDeviceType()=" << output.GetDeviceType() << " type=" << type << std::endl;
     return &output;
 #else
     CAFFE_THROW("Non-legacy operators are not legal in xplat/caffe2");
@@ -316,7 +316,7 @@ class TORCH_API OperatorBase : public Observable<OperatorBase> {
     output = output.defined()
         ? GetSizedTensorWithOptions(std::move(output), dims, options)
         : caffe2::empty(dims, options);
-
+    std::cerr << __FILE__ << " : " << __LINE__ << " : " << __func__ << " : output.GetDeviceType()=" << output.GetDeviceType() << " options=" << options << std::endl;
     return &output;
 #else
     CAFFE_THROW("Non-legacy operators are not legal in xplat/caffe2");

@@ -1,4 +1,5 @@
 #include <atomic>
+#include <iostream>
 
 #include "caffe2/core/common.h"
 
@@ -27,6 +28,16 @@ void SetHipRuntimeFlag() {
   g_caffe2_has_hip_linked.store(true);
 }
 } // namespace internal
+
+thread_local bool masquerade_as_cuda_{false};
+bool IsHipMasqueradingAsCuda() {
+  std::cerr << __FILE__ << " : " << __LINE__ << " : " << __func__ << " : cur value = " << masquerade_as_cuda_ << std::endl;
+  return masquerade_as_cuda_;
+}
+void SetHipMasqueradingAsCuda(bool value) {
+  std::cerr << __FILE__ << " : " << __LINE__ << " : " << __func__ << " : new value = " << value << std::endl;
+  masquerade_as_cuda_ = value;
+}
 
 const std::map<string, string>& GetBuildOptions() {
 #ifndef CAFFE2_BUILD_STRINGS

@@ -171,13 +171,7 @@ class CAFFE2_CUDA_API ThreadLocalCUDAObjects {
 #endif // CAFFE2_USE_CUDNN
 };
 
-#ifdef USE_ROCM
-#define MAYBE_FINAL
-#else
-#define MAYBE_FINAL final
-#endif
-
-class CAFFE2_CUDA_API CUDAContext MAYBE_FINAL : public BaseContext {
+class CAFFE2_CUDA_API CUDAContext final : public BaseContext {
  public:
   // The default cuda context constructor.
   explicit CUDAContext(DeviceIndex gpu_id = -1);
@@ -334,6 +328,26 @@ class CAFFE2_CUDA_API CUDAContext MAYBE_FINAL : public BaseContext {
     return status == cudaSuccess;
   }
 
+  // we use the ifdef here to preserve the original CUDA code and avoid thread_local access
+#ifdef USE_ROCM
+  at::Device device() const override {
+    auto d = at::Device(caffe2::IsHipMasqueradingAsCuda() ? CUDA : HIP, gpu_id_);
+    std::cerr << __FILE__ << " : " << __LINE__ << " : " << __func__ << " : " << d << std::endl;
+    return d;
+  }
+
+  DeviceType device_type() const override {
+    auto d = caffe2::IsHipMasqueradingAsCuda() ? CUDA : HIP;
+    std::cerr << __FILE__ << " : " << __LINE__ << " : " << __func__ << " : " << d << std::endl;
+    return d;
+  }
+
+  static DeviceType GetDeviceType() {
+    auto d = caffe2::IsHipMasqueradingAsCuda() ? CUDA : HIP;
+    std::cerr << __FILE__ << " : " << __LINE__ << " : " << __func__ << " : " << d << std::endl;
+    return d;
+  }
+#else
   at::Device device() const override {
     return at::Device(CUDA, gpu_id_);
   }
@@ -345,6 +359,7 @@ class CAFFE2_CUDA_API CUDAContext MAYBE_FINAL : public BaseContext {
   static constexpr DeviceType GetDeviceType() {
     return CUDA;
   }
+#endif
 
  protected:
   int gpu_id_;
