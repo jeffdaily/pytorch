@@ -8872,6 +8872,16 @@ CUDA_SPECIAL_MAP = collections.OrderedDict(
         # gesvdj SetXXX
         ('cusolverDnXgesvdjSetTolerance', ('hipsolverDnXgesvdjSetTolerance', CONV_MATH_FUNC, API_SPECIAL)),
         ('cusolverDnXgesvdjSetMaxSweeps', ('hipsolverDnXgesvdjSetMaxSweeps', CONV_MATH_FUNC, API_SPECIAL)),
+
+        # new to fully support solver in linalg module
+        ("cusolverDnCreateParams", ("hipsolverDnCreateParams", CONV_MATH_FUNC, API_SPECIAL)),
+        ("cusolverDnDestroyParams", ("hipsolverDnDestroyParams", CONV_MATH_FUNC, API_SPECIAL)),
+        ("cusolverDnXgeev_bufferSize", ("hipsolverDnXgeev_bufferSize", CONV_MATH_FUNC, API_SPECIAL)),
+        ("cusolverDnXgeev", ("hipsolverDnXgeev", CONV_MATH_FUNC, API_SPECIAL)),
+        ("cusolverDnXsyevBatched_bufferSize", ("hipsolverDnXsyevBatched_bufferSize", CONV_MATH_FUNC, API_SPECIAL)),
+        ("cusolverDnXsyevBatched", ("hipsolverDnXsyevBatched", CONV_MATH_FUNC, API_SPECIAL)),
+        ("cusolverDnXsytrs_bufferSize", ("hipsolverDnXsytrs_bufferSize", CONV_MATH_FUNC, API_SPECIAL)),
+        ("cusolverDnXsytrs", ("hipsolverDnXsytrs", CONV_MATH_FUNC, API_SPECIAL)),
     ]
 )
 

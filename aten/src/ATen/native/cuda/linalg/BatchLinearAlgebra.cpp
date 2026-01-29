@@ -2052,7 +2052,7 @@ void linalg_eig_kernel(Tensor& eigenvalues, Tensor& eigenvectors, Tensor& infos,
   // 'linalg_eig_cusolver_xgeev' both geev routines modify the provided input matrix in-place, therefore we need a copy
 
   TORCH_INTERNAL_ASSERT_DEBUG_ONLY(input.is_cuda());
-#if defined(CUSOLVER_VERSION) && (CUSOLVER_VERSION >= 11702)
+#if defined(CUSOLVER_VERSION) && (CUSOLVER_VERSION >= 11702) || defined(USE_ROCM)
   auto preferred_backend = at::globalContext().linalgPreferredBackend();
   switch (preferred_backend) {
     case at::LinalgBackend::Cusolver:
